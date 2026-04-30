@@ -1,0 +1,43 @@
+# SmartPay Production Enhancement Plan
+
+Upgrade the SmartPay prototype with security, performance, reliability, and administrative features.
+
+## Proposed Changes
+
+### 1. Security & Data Protection
+- **Encryption**: AES-128 encryption for biometric templates using `AES/ECB/PKCS5Padding`.
+- **Integration**:
+    - **Capture**: Raw template is encrypted in Java before DB `INSERT`.
+    - **Transmission**: Encrypted template is Base64 encoded for REST API transmission.
+    - **Verification**: AI service decrypts incoming data using the shared key before matching.
+
+### 2. Performance Optimization
+- **Faster Matching**: Vectorized Cosine Similarity matching using NumPy in Python.
+
+### 4. Role-Based Access Control (RBAC)
+- **Database**: Add `role` column to `admins` and `users` (Admin/Merchant).
+- **Session Management**: Pass user role from [LoginApp](file:///d:/SmartPay/src/com/smartpay/ui/LoginApp.java#16-109) to [SmartPayDashboard](file:///d:/SmartPay/src/com/smartpay/ui/SmartPayDashboard.java#6-88).
+- **UI Restriction**: Enable/Disable dashboard buttons based on the authenticated role.
+
+## Detailed Component Updates
+
+### Database Layer
+#### [MODIFY] [schema.sql](file:///d:/SmartPay/database/schema.sql)
+- Add `role` to `admins` table (Default: 'admin').
+- Add `role` to `users` table (Default: 'user').
+- Insert a demo merchant account.
+
+### Java UI Layer
+#### [MODIFY] [LoginApp.java](file:///d:/SmartPay/src/com/smartpay/ui/LoginApp.java)
+- Retrieve `role` during authentication and pass it to the Dashboard.
+
+#### [MODIFY] [SmartPayDashboard.java](file:///d:/SmartPay/src/com/smartpay/ui/SmartPayDashboard.java)
+- Add a constructor that accepts [UserSession](file:///d:/SmartPay/src/com/smartpay/ui/PaymentApp.java#194-199) (role/username).
+- Implement permission logic:
+    - **Admin**: All buttons enabled.
+    - **Merchant**: Only "Open Payment Screen" enabled.
+
+## Verification Plan
+- **Security Check**: Attempt login with incorrect credentials.
+- **Data Check**: Verify admin user exists in the `admins` table.
+- **Flow Check**: Ensure successful login redirects to the Dashboard.

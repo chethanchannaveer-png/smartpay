@@ -1,0 +1,78 @@
+# SmartPay Palm Payment System - Complete Project Overview
+
+SmartPay is a production-grade biometric payment solution combining Java Swing, Python AI matching, and Cashfree gateway integration.
+
+## 1. Project Folder Structure
+
+```text
+SmartPay/
+├── ai/
+│   ├── palm_matcher.py        # Python Flask AI matching service
+│   └── requirements.txt       # Python dependencies
+├── database/
+│   └── schema.sql             # MySQL table definitions & default data
+├── lib/                       # Java dependencies (MySQL Connector, JSON-lib)
+├── bin/                       # Compiled Java .class files
+└── src/com/smartpay/
+    ├── api/                   # Third-party & Internal API clients
+    │   ├── AIClient.java      # Communicates with Python AI service
+    │   ├── CashfreeConfig.java # Secure credentials for gateway
+    │   └── CashfreeService.java # HTTPS-only Cashfree integration
+    ├── db/                    # Data access layer
+    │   └── DBConnection.java  # MySQL connection management
+    ├── sdk/                   # Hardware abstraction layer
+    │   └── PalmScanner.java   # Palm vein scanner integration (Mock)
+    ├── security/              # Security and Encryption
+    │   └── CryptoProvider.java # AES-128 Biometric Encryption
+    └── ui/                    # Java Swing Graphical Interfaces
+        ├── LoginApp.java      # Application Entry Point (RBAC Login)
+        ├── SmartPayDashboard.java # Main system dashboard
+        ├── RegistrationApp.java # Multi-UPI User onboarding
+        ├── MerchantRegistrationApp.java # Merchant onboarding
+        ├── PaymentApp.java    # Secure payment with limit checks
+        └── TransactionHistoryApp.java # Auditable transaction logs
+```
+
+## 2. Core Class Architecture
+
+| Component | Responsibility |
+| :--- | :--- |
+| **LoginApp** | Authenticates Admins/Merchants; handles Role-Based Access (RBAC). |
+| **SmartPayDashboard** | Centralized hub; features a 5-second polling Device Monitor for hardware status. |
+| **RegistrationApp** | Captures palm templates, encrypts them (AES), and stores multiple UPI IDs. |
+| **PaymentApp** | Validates per-transaction (₹5k) and daily (₹20k) limits; processes through Cashfree. |
+| **CashfreeService** | Secure HTTPS client for real-time order creation and payment validation. |
+| **CryptoProvider** | Ensures biometric data is never stored or transmitted in plain text. |
+| **PalmScanner** | High-level interface for palm vein capture with connectivity sensing. |
+| **AI Matching** | Python service using NumPy for high-performance biometric similarity. |
+
+## 3. How to Run the Project
+
+### Step 1: Database Setup
+1.  Open MySQL.
+2.  Execute [schema.sql](file:///d:/SmartPay/database/schema.sql) to create tables and default accounts.
+3.  Ensure [DBConnection.java](file:///d:/SmartPay/src/com/smartpay/db/DBConnection.java) matches your local credentials.
+
+### Step 2: Start AI Service
+```bash
+cd ai
+pip install -r requirements.txt
+python palm_matcher.py
+```
+
+### Step 3: Run the Application
+Compile and launch the login screen:
+```powershell
+# In project root
+$sources = Get-ChildItem -Path src -Filter *.java -Recurse | ForEach-Object { $_.FullName }
+javac -d bin -cp "bin;lib/*" $sources
+java -cp "bin;lib/*" com.smartpay.ui.LoginApp
+```
+
+### Default Credentials
+- **Admin**: `admin` / `admin123`
+- **Merchant**: `merchant1` / `merchant123`
+
+---
+> [!IMPORTANT]
+> **Production Security**: Ensure `CASHFREE_APP_ID` and `CASHFREE_SECRET_KEY` environment variables are set before going live.
